@@ -7,9 +7,9 @@ import (
 )
 
 // stopDescription is used to describe stop command in detail and auto generate command doc.
-var stopDescription = "Stop a running container in Pouchd. " +
-	"This is useful when you wish to stop a container.And Pouchd will stop this running container and release the resource. " +
-	"The container that you stopped will be closed. "
+var stopDescription = "Stop a running container in Pouchd. Waiting the given number of seconds before forcefully killing the container." +
+	"This is useful when you wish to stop a container. And Pouchd will stop this running container and release the resource. " +
+	"The container that you stopped will be terminated. "
 
 // StopCommand use to implement 'stop' command, it stops a container.
 type StopCommand struct {
@@ -39,11 +39,15 @@ func (s *StopCommand) addFlags() {
 
 // runStop is the entry of stop command.
 func (s *StopCommand) runStop(args []string) error {
+	timeout := "0"
 	apiClient := s.cli.Client()
 
 	container := args[0]
+	if len(args) == 2 {
+		timeout = args[1]
+	}
 
-	if err := apiClient.ContainerStop(container); err != nil {
+	if err := apiClient.ContainerStop(container, timeout); err != nil {
 		return fmt.Errorf("failed to stop container %s: %v", container, err)
 	}
 	return nil
